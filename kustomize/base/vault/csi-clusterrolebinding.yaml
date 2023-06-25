@@ -1,0 +1,18 @@
+---
+# Source: vault/templates/csi-clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault-csi-provider-clusterrolebinding
+  labels:
+    app.kubernetes.io/name: vault-csi-provider
+    app.kubernetes.io/instance: vault
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: vault-csi-provider-clusterrole
+subjects:
+- kind: ServiceAccount
+  name: vault-csi-provider
+  namespace: vault
