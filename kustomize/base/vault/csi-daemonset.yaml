@@ -1,0 +1,101 @@
+---
+# Source: vault/templates/csi-daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: vault-csi-provider
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault-csi-provider
+    app.kubernetes.io/instance: vault
+    app.kubernetes.io/managed-by: Helm
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vault-csi-provider
+      app.kubernetes.io/instance: vault
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vault-csi-provider
+        app.kubernetes.io/instance: vault
+    spec:
+      
+      serviceAccountName: vault-csi-provider
+      containers:
+        - name: vault-csi-provider
+          
+          
+          image: "hashicorp/vault-csi-provider:1.3.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - --endpoint=/provider/vault.sock
+            - --debug=false
+            - --hmac-secret-name=vault-csi-provider-hmac-key
+          env:
+            - name: VAULT_ADDR
+              value: "unix:///var/run/vault/agent.sock"
+          volumeMounts:
+            - name: providervol
+              mountPath: "/provider"
+            - name: agent-unix-socket
+              mountPath: /var/run/vault
+          livenessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            failureThreshold: 2
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            failureThreshold: 2
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+        - name: vault-agent
+          image: "hashicorp/vault:1.13.1"
+          imagePullPolicy: IfNotPresent
+          
+          command:
+            - vault
+          args:
+            - agent
+            - -config=/etc/vault/config.hcl
+          ports:
+            - containerPort: 8200
+          env:
+            - name: VAULT_LOG_LEVEL
+              value: "info"
+            - name: VAULT_LOG_FORMAT
+              value: "standard"
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsUser: 100
+            runAsGroup: 1000
+          volumeMounts:
+            - name: agent-config
+              mountPath: /etc/vault/config.hcl
+              subPath: config.hcl
+              readOnly: true
+            - name: agent-unix-socket
+              mountPath: /var/run/vault
+      volumes:
+        - name: providervol
+          hostPath:
+            path: /etc/kubernetes/secrets-store-csi-providers
+        - name: agent-config
+          configMap:
+            name: vault-csi-provider-agent-config
+        - name: agent-unix-socket
+          emptyDir:
+            medium: Memory

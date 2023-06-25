@@ -1,0 +1,33 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: vault
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+resources:
+- namespace.yaml
+- server-disruptionbudget.yaml
+- csi-serviceaccount.yaml
+- injector-serviceaccount.yaml
+- server-serviceaccount.yaml
+- csi-agent-configmap.yaml
+- server-config-configmap.yaml
+- csi-clusterrole.yaml
+- injector-clusterrole.yaml
+- csi-clusterrolebinding.yaml
+- injector-clusterrolebinding.yaml
+- server-clusterrolebinding.yaml
+- csi-role.yaml
+- server-discovery-role.yaml
+- csi-rolebinding.yaml
+- server-discovery-rolebinding.yaml
+- injector-service.yaml
+- server-ha-active-service.yaml
+- server-ha-standby-service.yaml
+- server-headless-service.yaml
+- server-service.yaml
+- ui-service.yaml
+- csi-daemonset.yaml
+- injector-deployment.yaml
+- server-statefulset.yaml
+- injector-mutating-webhook.yaml

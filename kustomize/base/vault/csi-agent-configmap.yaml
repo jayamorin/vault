@@ -1,0 +1,24 @@
+---
+# Source: vault/templates/csi-agent-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-csi-provider-agent-config
+  namespace: vault
+  labels:
+    helm.sh/chart: vault-0.24.1
+    app.kubernetes.io/name: vault-csi-provider
+    app.kubernetes.io/instance: vault
+    app.kubernetes.io/managed-by: Helm
+data:
+  config.hcl: |
+    vault {
+        "address" = "http://vault.vault.svc:8200"
+    }
+
+    cache {}
+
+    listener "unix" {
+        address = "/var/run/vault/agent.sock"
+        tls_disable = true
+    }

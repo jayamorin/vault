@@ -1,0 +1,17 @@
+---
+# Source: vault/templates/csi-clusterrole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vault-csi-provider-clusterrole
+  labels:
+    app.kubernetes.io/name: vault-csi-provider
+    app.kubernetes.io/instance: vault
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts/token
+  verbs:
+  - create
